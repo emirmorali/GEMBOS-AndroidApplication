@@ -1,0 +1,67 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/darkBlue">
+
+    <!-- RecyclerView: Mesajların görüntülendiği alan -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:scrollbars="vertical" />
+
+    <!-- Mesaj gönderim alanı -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/black"
+        android:padding="8dp">
+
+        <EditText
+            android:id="@+id/editMessageText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_edit_text"
+            android:hint="Type message..."
+            android:padding="10dp"
+            android:textColor="@color/darkBlue"
+            android:textColorHint="@color/darkBlue" />
+
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/accentOrange"
+            android:text="Send"
+            android:textColor="@color/lightBeige" />
+    </LinearLayout>
+
+    <!-- Animasyonlu seçenek menüsü -->
+    <LinearLayout
+        android:id="@+id/animatedMenu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/accentOrange"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/option1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Hemen SMS Gönder" />
+
+        <Button
+            android:id="@+id/option2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ağ Araması Yap" />
+    </LinearLayout>
+</LinearLayout>
