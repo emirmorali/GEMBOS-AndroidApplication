@@ -66,6 +66,9 @@ public class RegisterActivity extends AppCompatActivity {
                         boolean registeredSuccess = dbHelper.insertData(phoneNumber, name, surname, password);
                         if(registeredSuccess){
                             Toast.makeText(RegisterActivity.this,"User registered successfully", Toast.LENGTH_LONG).show();
+                            Intent i = new Intent(RegisterActivity.this, VerificationActivity.class);
+                            i.putExtra("phone_number", phoneNumber);
+                            startActivity(i);
                         }else{
                             Toast.makeText(RegisterActivity.this,"User registration failed", Toast.LENGTH_LONG).show();
                         }
@@ -81,8 +84,8 @@ public class RegisterActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(RegisterActivity.this, MainActivity.class);
-                startActivity(i);
+                //Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
+                //startActivity(i);
             }
         });
 

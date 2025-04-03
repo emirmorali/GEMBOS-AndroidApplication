@@ -58,14 +58,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="Register" />
+        android:text="REGISTER" />
 
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="Login Page" />
+        android:text="GO TO LOGIN" />
 
     <TextView
         android:id="@+id/txtDisplayInfo"
