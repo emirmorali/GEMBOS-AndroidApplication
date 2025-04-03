@@ -1,5 +1,6 @@
 package com.example.gembos;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -40,8 +41,8 @@ public class VerificationActivity extends AppCompatActivity {
 
                 if(dbHelper.verifyUser(phoneNumber, verificationCode)) {
                     Toast.makeText(VerificationActivity.this,"Verification successful!", Toast.LENGTH_LONG).show();
-                    //Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
-                    //startActivity(i);
+                    Intent i = new Intent(VerificationActivity.this, LoginActivity.class);
+                    startActivity(i);
                 }
                 else{
                     Toast.makeText(VerificationActivity.this,"Entered code is not correct!", Toast.LENGTH_LONG).show();

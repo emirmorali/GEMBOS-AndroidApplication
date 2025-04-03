@@ -36,7 +36,7 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false"/>
-        <activity>
+        <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>

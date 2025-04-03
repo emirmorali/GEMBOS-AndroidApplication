@@ -5,6 +5,8 @@
     android:orientation="vertical"
     android:layout_height="match_parent"
     android:padding="16dp"
+    android:gravity="center"
+    android:background="@color/darkBlue"
     tools:context=".RegisterActivity">
 
     <EditText
@@ -13,7 +15,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="text"
-        android:hint="Name" />
+        android:hint="Name"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
     <EditText
         android:id="@+id/edtSurname"
@@ -22,7 +26,9 @@
         android:ems="10"
         android:inputType="text"
         android:minHeight="48dp"
-        android:hint="Surname" />
+        android:hint="Surname"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
     <EditText
         android:id="@+id/edtPhoneNumber"
@@ -33,7 +39,9 @@
         android:maxLength="11"
         android:digits="0123456789"
         android:minHeight="48dp"
-        android:hint="Phone Number (05xxxxxxxxx)" />
+        android:hint="Phone Number (05xxxxxxxxx)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
     <EditText
         android:id="@+id/edtPassword"
@@ -42,7 +50,9 @@
         android:ems="10"
         android:inputType="textPassword"
         android:minHeight="48dp"
-        android:hint="Password" />
+        android:hint="Password"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
     <EditText
         android:id="@+id/edtPasswordAgain"
@@ -51,26 +61,24 @@
         android:ems="10"
         android:inputType="textPassword"
         android:minHeight="48dp"
-        android:hint="Password Again" />
+        android:hint="Password Again"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"/>
 
     <Button
         android:id="@+id/btnRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="REGISTER" />
+        android:text="REGISTER"
+        android:backgroundTint="@color/accentOrange"/>
 
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="GO TO LOGIN" />
-
-    <TextView
-        android:id="@+id/txtDisplayInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text=""/>
+        android:text="GO TO LOGIN"
+        android:backgroundTint="@color/accentOrange"/>
 
 </LinearLayout>

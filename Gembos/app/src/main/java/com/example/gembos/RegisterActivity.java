@@ -23,7 +23,6 @@ public class RegisterActivity extends AppCompatActivity {
 
     EditText edtName, edtSurname, edtPhoneNumber, edtPassword, edtPasswordAgain;
     Button btnRegister, btnLogin;
-    TextView txtDisplayInfo;
     DBHelper dbHelper;
 
     @Override
@@ -36,8 +35,6 @@ public class RegisterActivity extends AppCompatActivity {
         edtPhoneNumber = findViewById(R.id.edtPhoneNumber);
         edtPassword = findViewById(R.id.edtPassword);
         edtPasswordAgain = findViewById(R.id.edtPasswordAgain);
-
-        txtDisplayInfo = findViewById(R.id.txtDisplayInfo);
 
         btnRegister = findViewById(R.id.btnRegister);
         btnLogin = findViewById(R.id.btnLogin);
@@ -91,8 +88,8 @@ public class RegisterActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
-                //startActivity(i);
+                Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(i);
             }
         });
 
