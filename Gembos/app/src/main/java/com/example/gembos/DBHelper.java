@@ -48,12 +48,11 @@ public class DBHelper extends SQLiteOpenHelper {
         int code = 100000 + random.nextInt(900000); // 100000 ile 999999 arasında sayı üretir
         return String.valueOf(code);
     }
-
+  
     public boolean checkPhoneNumber(String phoneNumber){
         if (phoneNumber.startsWith("0")) {
             phoneNumber = phoneNumber.substring(1);
         }
-        
         SQLiteDatabase myDB = this.getWritableDatabase();
         Cursor cursor = myDB.rawQuery("select * from users where phoneNumber = ?", new String[]{phoneNumber});
         if(cursor.getCount()>0) {
@@ -104,4 +103,11 @@ public class DBHelper extends SQLiteOpenHelper {
         return verificationCode;
     }
 
+    public boolean checkUser(String phoneNumber, String pw){
+        SQLiteDatabase myDB = this.getWritableDatabase();
+        Cursor cursor = myDB.rawQuery("select * from users where phoneNumber = ? and password = ?", new String[]{phoneNumber, pw});
+        if(cursor.getCount()>0)
+            return true;
+        else return false;
+    }
 }
