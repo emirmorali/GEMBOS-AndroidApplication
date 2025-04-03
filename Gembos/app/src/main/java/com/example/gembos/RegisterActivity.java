@@ -2,8 +2,10 @@ package com.example.gembos;
 
 import static android.content.ContentValues.TAG;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -40,6 +44,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 1);
+        }
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,9 +99,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean isValidPhoneNumber(String phoneNumber) {
-        if (phoneNumber.startsWith("0")) {
-            phoneNumber = phoneNumber.substring(1); // Başındaki 0'ı kaldır
-        }
-        return phoneNumber.matches("^[5][0-9]{9}$"); // 5 ile başlamalı ve toplam 10 rakam içermeli
+        return phoneNumber.matches("^05[0-9]{9}$"); // 5 ile başlamalı ve toplam 10 rakam içermeli
     }
 }

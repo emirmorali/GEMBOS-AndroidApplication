@@ -25,13 +25,13 @@ public class VerificationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verification);
         String phoneNumber = getIntent().getStringExtra("phone_number");
+        Log.d("RegisterActivity", "Starting VerificationActivity with phone number: " + phoneNumber);
 
         verifyBtn = findViewById(R.id.btnVerify);
         verificationCodeTxt = findViewById(R.id.edtVerificationCode);
 
-        sendVerificationCode(phoneNumber);
-
         dbHelper = new DBHelper(this);
+        sendVerificationCode(phoneNumber);
 
         verifyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,10 +51,6 @@ public class VerificationActivity extends AppCompatActivity {
     }
 
     public void sendVerificationCode(String phoneNumber){
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 1);
-        }
-
         String verificationCode = dbHelper.getVerificationCode(phoneNumber);
 
         try {

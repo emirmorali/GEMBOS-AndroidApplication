@@ -13,7 +13,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String DBName = "register.db";
 
     public DBHelper(@Nullable Context context) {
-        super(context, DBName, null, 1);
+        super(context, DBName, null, 2);
     }
 
     @Override
@@ -23,7 +23,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("drop table if exists users");
+        db.execSQL("DROP TABLE IF EXISTS users");
+        onCreate(db);
     }
 
     public boolean insertData(String phoneNumber, String name, String surname, String password){
@@ -65,14 +66,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean verifyUser(String phoneNumber, String enteredCode) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE phone_number = ? AND verification_code = ?",
+        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE phoneNumber = ? AND verificationCode = ?",
                 new String[]{phoneNumber, enteredCode});
 
         if (cursor.getCount() > 0) {
             // Kod doğru, kullanıcının isVerified değerini 1 yap
             ContentValues values = new ContentValues();
             values.put("isVerified", 1);
-            db.update("users", values, "phone_number = ?", new String[]{phoneNumber});
+            db.update("users", values, "phoneNumber = ?", new String[]{phoneNumber});
             cursor.close();
             db.close();
             return true;
@@ -88,11 +89,11 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         String verificationCode = null;
 
-        Cursor cursor = db.rawQuery("SELECT verification_code FROM users WHERE phone_number = ?",
+        Cursor cursor = db.rawQuery("SELECT verificationCode FROM users WHERE phoneNumber = ?",
                 new String[]{phoneNumber});
 
         if (cursor.moveToFirst()) {
-            int columnIndex = cursor.getColumnIndex("verification_code");
+            int columnIndex = cursor.getColumnIndex("verificationCode");
             if (columnIndex != -1) {
                 verificationCode = cursor.getString(columnIndex);
             }
