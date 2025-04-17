@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -28,14 +30,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
-
-    private static final int SMS_PERMISSION_CODE = 1;
+public class TextingActivity extends AppCompatActivity {
     private String phoneNumber;
 
     private RecyclerView recyclerView;
-    private MessageAdapter adapter;
-    private List<Message> messageList;
+    private MessageItemAdapter adapter;
+    private List<MessageItem> messageList;
 
     private EditText editMessageText;
     private Button btnSend;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_texting);
 
         recyclerView = findViewById(R.id.recyclerView);
         editMessageText = findViewById(R.id.editMessageText);
@@ -55,23 +55,29 @@ public class MainActivity extends AppCompatActivity {
         option2 = findViewById(R.id.option2);
 
         messageList = new ArrayList<>();
-        adapter = new MessageAdapter(messageList);
+        adapter = new MessageItemAdapter(messageList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
         animatedMenu = findViewById(R.id.animatedMenu);
         // Telefon numarası almak için pop-up göster
-        showPhoneNumberDialog();
+        //showPhoneNumberDialog();
 
-        // Check and request SMS permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS}, SMS_PERMISSION_CODE);
+        // Receive phone number from intent
+        phoneNumber = getIntent().getStringExtra("phone_number");
+
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            Toast.makeText(this, "No phone number provided!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
+
+        loadSmsConversation(phoneNumber);
 
         // SMS gönder butonu tıklama işlemi
         btnSend.setOnClickListener(view -> {
-            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SEND_SMS)
+            if (ContextCompat.checkSelfPermission(TextingActivity.this, Manifest.permission.SEND_SMS)
                     != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
+                ActivityCompat.requestPermissions(TextingActivity.this, new String[]{Manifest.permission.SEND_SMS}, 1);
             } else {
                 //showAnimatedMenu(view); // Animasyonu başlat
                 sendSMS();
@@ -79,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         option2.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, CheckNetwork.class);
+            Intent intent = new Intent(TextingActivity.this, CheckNetwork.class);
             startActivity(intent);
         });
 
@@ -102,8 +108,16 @@ public class MainActivity extends AppCompatActivity {
 
                                 // Check if the sender matches the saved phone number
                                 if (phoneNumber != null && sender.equals(phoneNumber)) {
+                                    String displayText;
+                                    if(isEncrypted(message)) {
+                                        displayText = EncryptionHelper.decrypt(message);
+                                    }
+                                    else {
+                                        displayText = message;
+                                    }
+
                                     // Add the message to the list and update the UI
-                                    messageList.add(new Message(message, false)); // false indicates a received message
+                                    messageList.add(new MessageItem(displayText, false)); // false indicates a received message
                                     adapter.notifyItemInserted(messageList.size() - 1);
                                     recyclerView.scrollToPosition(messageList.size() - 1);
 
@@ -143,16 +157,50 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void loadSmsConversation(String number) {
+        messageList.clear();
+        Uri uri = Uri.parse("content://sms");
+        Cursor cursor = getContentResolver().query(uri, null, null, null, "date ASC");
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+                String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
+                int type = cursor.getInt(cursor.getColumnIndexOrThrow("type")); // 1=received, 2=sent
+
+                if (address != null && address.equals(number)) {
+                    boolean isSent = type == 2;
+                    String displayText;
+
+                    if (isEncrypted(body)) {
+                        displayText = EncryptionHelper.decrypt(body);
+                    }
+                    else {
+                        displayText = body;
+                    }
+
+                    messageList.add(new MessageItem(displayText, isSent));
+                }
+            }
+            cursor.close();
+            adapter.notifyDataSetChanged();
+            recyclerView.scrollToPosition(messageList.size() - 1);
+        }
+    }
+
+
     private void sendSMS() {
         String messageText = editMessageText.getText().toString();
 
         if (!messageText.isEmpty() && phoneNumber != null) {
             try {
+                String encryptedSMS = EncryptionHelper.encrypt(messageText);
+
                 SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(phoneNumber, null, messageText, null, null);
+                smsManager.sendTextMessage(phoneNumber, null, encryptedSMS, null, null);
                 Toast.makeText(this, "SMS sent!", Toast.LENGTH_SHORT).show();
 
-                messageList.add(new Message(messageText, true));
+                messageList.add(new MessageItem(messageText, true));
                 adapter.notifyItemInserted(messageList.size() - 1);
                 recyclerView.scrollToPosition(messageList.size() - 1);
 
@@ -185,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == SMS_PERMISSION_CODE) {
+        if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 sendSMS();
             } else {
@@ -202,4 +250,9 @@ public class MainActivity extends AppCompatActivity {
             unregisterReceiver(smsReceiver);
         }
     }
+
+    public static boolean isEncrypted(String text) {
+        return text.startsWith("[GEMBOS]");
+    }
+
 }
