@@ -32,6 +32,7 @@ import java.util.List;
 
 public class TextingActivity extends AppCompatActivity {
     private String phoneNumber;
+    private boolean isEncrypted;
 
     private RecyclerView recyclerView;
     private MessageItemAdapter adapter;
@@ -64,6 +65,12 @@ public class TextingActivity extends AppCompatActivity {
 
         // Receive phone number from intent
         phoneNumber = getIntent().getStringExtra("phone_number");
+        isEncrypted = getIntent().getBooleanExtra("is_encrypted", false);
+
+        if (!isEncrypted) {
+            // Show warning dialog for unencrypted user
+            showWarningDialog();
+        }
 
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             Toast.makeText(this, "No phone number provided!", Toast.LENGTH_SHORT).show();
@@ -121,7 +128,7 @@ public class TextingActivity extends AppCompatActivity {
                                     adapter.notifyItemInserted(messageList.size() - 1);
                                     recyclerView.scrollToPosition(messageList.size() - 1);
 
-                                    Toast.makeText(context, "Message received from: " + sender, Toast.LENGTH_SHORT).show();
+                                    //Toast.makeText(context, "Message received from: " + sender, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }
@@ -154,6 +161,26 @@ public class TextingActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Enter phone number.", Toast.LENGTH_SHORT).show();
             }
+        });
+    }
+
+    private void showWarningDialog() {
+        // Create a custom view for the dialog
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_encryption_warning, null);
+
+        // Build the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
+
+        // Create and show the dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Set up the OK button
+        Button btnOk = dialogView.findViewById(R.id.btnSubmitPhoneNumber);
+        btnOk.setOnClickListener(v -> {
+            // Dismiss the dialog when the button is clicked
+            dialog.dismiss();
         });
     }
 
@@ -198,7 +225,7 @@ public class TextingActivity extends AppCompatActivity {
 
                 SmsManager smsManager = SmsManager.getDefault();
                 smsManager.sendTextMessage(phoneNumber, null, encryptedSMS, null, null);
-                Toast.makeText(this, "SMS sent!", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "SMS sent!", Toast.LENGTH_SHORT).show();
 
                 messageList.add(new MessageItem(messageText, true));
                 adapter.notifyItemInserted(messageList.size() - 1);
@@ -209,7 +236,8 @@ public class TextingActivity extends AppCompatActivity {
                 Toast.makeText(this, "Error sending SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(this, "Check message content or phone number.", Toast.LENGTH_SHORT).show();
+            if (phoneNumber == null)
+                Toast.makeText(this, "Phone number unavailable!", Toast.LENGTH_SHORT).show();
         }
     }
 

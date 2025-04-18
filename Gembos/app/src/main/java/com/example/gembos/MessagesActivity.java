@@ -54,9 +54,10 @@ public class MessagesActivity extends AppCompatActivity {
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         messageList = new ArrayList<>();
 
-        adapter = new MessageAdapter(messageList, phoneNumber -> {
+        adapter = new MessageAdapter(messageList, (phoneNumber, isEncrypted) -> {
             Intent intent = new Intent(MessagesActivity.this, TextingActivity.class);
             intent.putExtra("phone_number", phoneNumber);
+            intent.putExtra("is_encrypted", isEncrypted);
             startActivity(intent);
         });
         messageRecyclerView.setAdapter(adapter);
@@ -90,55 +91,53 @@ public class MessagesActivity extends AppCompatActivity {
     private void loadSmsInbox() {
         messageList.clear(); // clear old messages
 
-        Uri uriSms = Uri.parse("content://sms/inbox");
+        // Get both inbox and sent messages
+        List<Message> allMessages = new ArrayList<>();
+        fetchMessagesFromUri(Uri.parse("content://sms/inbox"), allMessages);
+        fetchMessagesFromUri(Uri.parse("content://sms/sent"), allMessages);
 
-        // Use try-with-resources to automatically close the cursor
-        try (Cursor cursor = getContentResolver().query(uriSms, null, null, null, "date DESC")) {
+        // Map to hold latest message per address
+        Map<String, Message> latestMessages = new HashMap<>();
+
+        for (Message msg : allMessages) {
+            String address = msg.getSender();
+            String date = msg.getDate();
+
+            if (!latestMessages.containsKey(address) ||
+                    Long.parseLong(latestMessages.get(address).getDate()) < Long.parseLong(date)) {
+                latestMessages.put(address, msg);
+            }
+        }
+
+        messageList.addAll(latestMessages.values());
+
+        // Sort the messages by date descending
+        Collections.sort(messageList, (m1, m2) ->
+                Long.compare(Long.parseLong(m2.getDate()), Long.parseLong(m1.getDate()))
+        );
+
+        adapter.notifyDataSetChanged();
+
+    }
+
+    private void fetchMessagesFromUri(Uri uri, List<Message> targetList) {
+        try (Cursor cursor = getContentResolver().query(uri, null, null, null, "date DESC")) {
             if (cursor != null) {
-                // Map to hold messages grouped by sender
-                Map<String, Message> latestMessages = new HashMap<>();
-
                 while (cursor.moveToNext()) {
                     String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
                     String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
                     String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
-/*
-                    // Fetch contact name if available
-                    String contactName = getContactName(address);
 
-                    // If contact name is not available, use the phone number
-                    if (contactName == null || contactName.isEmpty()) {
-                        contactName = address; // Use the phone number if contact name is not found
-                    }
-*/
                     Message message = new Message(address, body, date);
-
-                    // Only keep the latest message for each sender
-                    if (!latestMessages.containsKey(address) || Long.parseLong(latestMessages.get(address).getDate()) < Long.parseLong(date)) {
-                        latestMessages.put(address, message);
-                    }
+                    targetList.add(message);
                 }
-
-                // Add the latest message for each sender
-                messageList.addAll(latestMessages.values());
-
-                // Sort the messages by date in descending order
-                Collections.sort(messageList, new Comparator<Message>() {
-                    @Override
-                    public int compare(Message m1, Message m2) {
-                        // Compare by date, with the most recent messages first
-                        return Long.compare(Long.parseLong(m2.getDate()), Long.parseLong(m1.getDate()));
-                    }
-                });
-
-                // Notify the adapter about the change
-                adapter.notifyDataSetChanged();
             }
         } catch (Exception e) {
-            e.printStackTrace(); // Log the exception for debugging
-            Toast.makeText(this, "Failed to load messages", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to load SMS from " + uri.toString(), Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // Helper method to get contact name from phone number
     private String getContactName(String phoneNumber) {

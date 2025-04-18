@@ -39,14 +39,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onMessageClick(messageList.get(position).getSender());
+                    // Get message and check encryption status
+                    Message message = messageList.get(position);
+                    boolean isEncrypted = message.getBody().startsWith("[GEMBOS]");
+                    listener.onMessageClick(message.getSender(), isEncrypted);  // Passing encryption status
                 }
             });
         }
     }
 
     public interface OnMessageClickListener {
-        void onMessageClick(String phoneNumber);
+        void onMessageClick(String phoneNumber, boolean isEncrypted);
     }
 
     @NonNull
@@ -67,12 +70,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             // Encrypted
             holder.iconEncrypted.setVisibility(View.VISIBLE);
             holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white)); // Normal bg
+            holder.textMessage.setText(EncryptionHelper.decrypt(msg.getBody())); // Decrypt and show the last message
         } else {
             // Unencrypted
             holder.iconEncrypted.setVisibility(View.GONE);
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_red)); // Your red tone
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_red)); // red tone
             // Set sender text color to a color that contrasts with the red background
-            holder.textSender.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.black)); // Set sender text color to white
+            holder.textSender.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.black)); // Set sender text color
         }
 
         // Format date from timestamp string
