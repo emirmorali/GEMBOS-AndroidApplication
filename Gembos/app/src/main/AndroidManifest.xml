@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -31,7 +32,7 @@
         <activity
             android:name=".CheckNetwork"
             android:exported="false" />
-        <activity android:name=".MainActivity"
+        <activity android:name=".TextingActivity"
             android:exported="false"/>
         <activity
             android:name=".RegisterActivity"
@@ -50,6 +51,9 @@
         <activity
             android:name=".VerificationActivity"
             android:exported="false" />
+        <activity
+            android:name=".MessagesActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

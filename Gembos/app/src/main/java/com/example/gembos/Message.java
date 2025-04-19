@@ -1,19 +1,17 @@
 package com.example.gembos;
 
 public class Message {
-    private String messageContent;
-    private boolean isSent;
+    private String sender;
+    private String body;
+    private String date;
 
-    public Message(String messageContent, boolean isSent) {
-        this.messageContent = messageContent;
-        this.isSent = isSent;
+    public Message(String sender, String body, String date) {
+        this.sender = sender;
+        this.body = body;
+        this.date = date;
     }
 
-    public String getMessageContent() {
-        return messageContent;
-    }
-
-    public boolean isSent() {
-        return isSent;
-    }
+    public String getSender() { return sender; }
+    public String getBody() { return body; }
+    public String getDate() { return date; }
 }
