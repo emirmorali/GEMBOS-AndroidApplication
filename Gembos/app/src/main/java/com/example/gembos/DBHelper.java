@@ -5,6 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import androidx.annotation.Nullable;
@@ -18,7 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table users(phoneNumber TEXT primary key, name TEXT, surname TEXT, password TEXT, isVerified INTEGER, verificationCode TEXT)");
+        db.execSQL("create table users(phoneNumber TEXT primary key, name TEXT, surname TEXT, password TEXT, isVerified INTEGER, isSynced INTEGER, verificationCode TEXT)");
     }
 
     @Override
@@ -37,6 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put("surname", surname);
         contentValues.put("password", password);
         contentValues.put("isVerified", 0);
+        contentValues.put("isSynced", 0);
         contentValues.put("verificationCode", verificationCode);
         long result = myDB.insert("users", null, contentValues);
         if(result == -1) return false;
@@ -110,4 +114,43 @@ public class DBHelper extends SQLiteOpenHelper {
             return true;
         else return false;
     }
+
+    //yeni eklemeler
+    public List<UserModel> getUnsyncedUsers() {
+        List<UserModel> unsyncedUsers = new ArrayList<>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE isSynced = 0 AND isVerified = 1", null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int phoneIndex = cursor.getColumnIndex("phoneNumber");
+                int nameIndex = cursor.getColumnIndex("name");
+                int surnameIndex = cursor.getColumnIndex("surname");
+                int passwordIndex = cursor.getColumnIndex("password");
+
+                if (phoneIndex != -1 && nameIndex != -1 && surnameIndex != -1 && passwordIndex != -1) {
+                    String phoneNumber = cursor.getString(phoneIndex);
+                    String name = cursor.getString(nameIndex);
+                    String surname = cursor.getString(surnameIndex);
+                    String password = cursor.getString(passwordIndex);
+
+                    UserModel user = new UserModel(phoneNumber, name, surname, password);
+                    unsyncedUsers.add(user);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
+        return unsyncedUsers;
+    }
+
+    public void markUserAsSynced(String phoneNumber) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("isSynced", 1);
+        db.update("users", values, "phoneNumber = ?", new String[]{phoneNumber});
+        db.close();
+    }
+
 }
