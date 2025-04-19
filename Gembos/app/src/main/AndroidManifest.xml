@@ -37,6 +37,9 @@
             android:name=".RegisterActivity"
             android:exported="false"/>
         <activity
+            android:name = ".SyncActivity"
+            android:exported="false"/>
+        <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>

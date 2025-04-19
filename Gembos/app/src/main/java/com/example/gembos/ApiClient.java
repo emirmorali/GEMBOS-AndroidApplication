@@ -4,7 +4,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://10.0.2.2:5000"; // Emülatör için backend adresi
+    private static final String BASE_URL = "https://gembosapi.oa.r.appspot.com";
     private static Retrofit retrofit;
 
     public static Retrofit getRetrofit() {
