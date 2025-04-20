@@ -16,7 +16,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String DBName = "register.db";
 
     public DBHelper(@Nullable Context context) {
-        super(context, DBName, null, 2);
+        super(context, DBName, null, 3);
     }
 
     @Override

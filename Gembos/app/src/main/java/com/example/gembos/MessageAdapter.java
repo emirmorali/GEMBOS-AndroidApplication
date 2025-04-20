@@ -75,8 +75,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             // Unencrypted
             holder.iconEncrypted.setVisibility(View.GONE);
             holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_red)); // red tone
-            // Set sender text color to a color that contrasts with the red background
-            holder.textSender.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.black)); // Set sender text color
         }
 
         // Format date from timestamp string

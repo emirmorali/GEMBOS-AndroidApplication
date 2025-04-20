@@ -35,12 +35,12 @@
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/newMessageButton"
+        android:id="@+id/syncButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="New Message"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        android:src="@drawable/sync" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

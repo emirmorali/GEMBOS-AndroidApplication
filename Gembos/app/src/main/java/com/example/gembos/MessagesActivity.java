@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +36,8 @@ public class MessagesActivity extends AppCompatActivity {
     private RecyclerView messageRecyclerView;
     private List<Message> messageList;
     private MessageAdapter adapter;
+    private FloatingActionButton syncButton;
+    private SyncManager syncManager;
 
     private BroadcastReceiver smsReceiver = new BroadcastReceiver() {
         @Override
@@ -51,8 +55,18 @@ public class MessagesActivity extends AppCompatActivity {
         setSupportActionBar(topAppBar);
 
         messageRecyclerView = findViewById(R.id.messageRecyclerView);
+        syncButton = findViewById(R.id.syncButton);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         messageList = new ArrayList<>();
+
+        syncManager = new SyncManager(this);
+        syncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                syncManager.sendUnsyncedUsersToServer();
+                Toast.makeText(MessagesActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         adapter = new MessageAdapter(messageList, (phoneNumber, isEncrypted) -> {
             Intent intent = new Intent(MessagesActivity.this, TextingActivity.class);
