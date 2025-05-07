@@ -16,12 +16,14 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String DBName = "register.db";
 
     public DBHelper(@Nullable Context context) {
-        super(context, DBName, null, 3);
+        super(context, DBName, null, 4);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table users(phoneNumber TEXT primary key, name TEXT, surname TEXT, password TEXT, isVerified INTEGER, isSynced INTEGER, verificationCode TEXT)");
+
+        db.execSQL("create table messages(id TEXT primary key AUTOINCREMENT, sender TEXT NOT NULL, body TEXT NOT NULL, date TEXT NOT NULL, synced INTEGER DEFAULT 0)");
     }
 
     @Override
@@ -45,6 +47,17 @@ public class DBHelper extends SQLiteOpenHelper {
         long result = myDB.insert("users", null, contentValues);
         if(result == -1) return false;
         else return true;
+    }
+
+    public void insertMessage(Message message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sender", message.getSender());
+        values.put("body", message.getBody());
+        values.put("date", message.getDate());
+        values.put("synced", 0); // yeni mesaj senkronize edilmedi
+
+        db.insert("messages", null, values);
     }
 
     public String generateVerificationCode(){
@@ -115,7 +128,7 @@ public class DBHelper extends SQLiteOpenHelper {
         else return false;
     }
 
-    //yeni eklemeler
+
     public List<UserModel> getUnsyncedUsers() {
         List<UserModel> unsyncedUsers = new ArrayList<>();
 
@@ -124,19 +137,16 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                int phoneIndex = cursor.getColumnIndex("phoneNumber");
-                int nameIndex = cursor.getColumnIndex("name");
-                int surnameIndex = cursor.getColumnIndex("surname");
-                int passwordIndex = cursor.getColumnIndex("password");
-
-                if (phoneIndex != -1 && nameIndex != -1 && surnameIndex != -1 && passwordIndex != -1) {
-                    String phoneNumber = cursor.getString(phoneIndex);
-                    String name = cursor.getString(nameIndex);
-                    String surname = cursor.getString(surnameIndex);
-                    String password = cursor.getString(passwordIndex);
+                try {
+                    String phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow("phoneNumber"));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                    String surname = cursor.getString(cursor.getColumnIndexOrThrow("surname"));
+                    String password = cursor.getString(cursor.getColumnIndexOrThrow("password"));
 
                     UserModel user = new UserModel(phoneNumber, name, surname, password);
                     unsyncedUsers.add(user);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
                 }
             } while (cursor.moveToNext());
             cursor.close();
@@ -145,6 +155,35 @@ public class DBHelper extends SQLiteOpenHelper {
         return unsyncedUsers;
     }
 
+    public List<Message> getUnsyncedMessages() {
+        List<Message> messages = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                "messages",
+                new String[]{"id", "sender", "body", "date"},
+                "synced = ?",
+                new String[]{"0"},
+                null, null, null
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String sender = cursor.getString(cursor.getColumnIndexOrThrow("sender"));
+                String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+
+                Message msg = new Message(id, sender, body, date);
+                messages.add(msg);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return messages;
+    }
+
+
     public void markUserAsSynced(String phoneNumber) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -152,5 +191,14 @@ public class DBHelper extends SQLiteOpenHelper {
         db.update("users", values, "phoneNumber = ?", new String[]{phoneNumber});
         db.close();
     }
+
+    public void markMessageAsSynced(Message message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("synced", 1);
+
+        db.update("messages", values, "id = ?", new String[]{String.valueOf(message.getId())});
+    }
+
 
 }

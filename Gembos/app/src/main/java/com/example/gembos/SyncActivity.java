@@ -22,6 +22,7 @@ public class SyncActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 syncManager.sendUnsyncedUsersToServer();
+                syncManager.sendUnsyncedMessagesToServer();
                 Toast.makeText(SyncActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
             }
         });

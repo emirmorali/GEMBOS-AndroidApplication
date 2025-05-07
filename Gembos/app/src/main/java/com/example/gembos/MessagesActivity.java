@@ -38,6 +38,7 @@ public class MessagesActivity extends AppCompatActivity {
     private MessageAdapter adapter;
     private FloatingActionButton syncButton;
     private SyncManager syncManager;
+    DBHelper dbHelper;
 
     private BroadcastReceiver smsReceiver = new BroadcastReceiver() {
         @Override
@@ -142,8 +143,11 @@ public class MessagesActivity extends AppCompatActivity {
                     String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
                     String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
-                    Message message = new Message(address, body, date);
-                    targetList.add(message);
+                    if (body != null && body.startsWith("[GEMBOS]")) {
+                        Message message = new Message(address, body, date);
+                        targetList.add(message);
+                        dbHelper.insertMessage(message); // burada SQLite’a kaydediyoruz
+                    }
                 }
             }
         } catch (Exception e) {

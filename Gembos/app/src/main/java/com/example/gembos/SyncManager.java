@@ -25,6 +25,7 @@ public class SyncManager {
             return;
         }
 
+
         UserApiService apiService = ApiClient.getRetrofit().create(UserApiService.class);
         Call<Void> call = apiService.syncUsers(unsyncedUsers);
 
@@ -47,4 +48,37 @@ public class SyncManager {
             }
         });
     }
+
+    public void sendUnsyncedMessagesToServer() {
+        DBHelper dbHelper = new DBHelper(context);
+        List<Message> unsyncedMessages = dbHelper.getUnsyncedMessages();
+
+        if (unsyncedMessages.isEmpty()) {
+            Log.d("SYNC", "Gönderilecek mesaj yok.");
+            return;
+        }
+
+        UserApiService apiService = ApiClient.getRetrofit().create(UserApiService.class);
+
+        for (Message msg : unsyncedMessages) {
+            Call<Void> call = apiService.syncMultipleMessage(msg);
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("SYNC", "Mesaj senkronize edildi: " + msg.getBody());
+                        dbHelper.markMessageAsSynced(msg);
+                    } else {
+                        Log.e("SYNC", "Mesaj senkronize edilemedi. Sunucu hatası: " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.e("SYNC", "Mesaj gönderim hatası: " + t.getMessage());
+                }
+            });
+        }
+    }
+
 }
