@@ -73,7 +73,7 @@ public class MessagesActivity extends AppCompatActivity {
             intent.putExtra("phone_number", phoneNumber);
             intent.putExtra("is_encrypted", isEncrypted);
             startActivity(intent);
-        });
+        }, null);
         messageRecyclerView.setAdapter(adapter);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
@@ -148,7 +148,7 @@ public class MessagesActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Failed to load SMS from " + uri.toString(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Failed to load SMS from " + uri.toString(), Toast.LENGTH_SHORT).show();
         }
     }
 
