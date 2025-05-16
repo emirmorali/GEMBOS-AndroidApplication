@@ -33,7 +33,7 @@ import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-public class TextingActivity extends AppCompatActivity {
+public class TextingActivity extends AppCompatActivity implements KeyExchangeCallback{
     private String phoneNumber;
     private boolean isEncrypted;
     private com.example.gembos.KeyExchangeManager keyExchangeManager;
@@ -50,10 +50,20 @@ public class TextingActivity extends AppCompatActivity {
     private BroadcastReceiver smsReceiver;
 
     @Override
+    public void onKeyExchangeMessage(String message, boolean isSent) {
+        // Add key exchange message to UI
+        messageList.add(new MessageItem("___ PUBLIC KEY ___", isSent));
+        adapter.notifyItemInserted(messageList.size() - 1);
+        recyclerView.scrollToPosition(messageList.size() - 1);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_texting);
-        keyExchangeManager = new KeyExchangeManager(this);
+
+        keyExchangeManager = new KeyExchangeManager();
+        KeyExchangeManager.setCallback(this);
 
         recyclerView = findViewById(R.id.recyclerView);
         editMessageText = findViewById(R.id.editMessageText);
@@ -114,44 +124,60 @@ public class TextingActivity extends AppCompatActivity {
                     if (bundle != null) {
                         Object[] pdus = (Object[]) bundle.get("pdus");
                         if (pdus != null) {
-                            for (Object pdu : pdus) {
-                                SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdu);
-                                String sender = smsMessage.getDisplayOriginatingAddress();
-                                String message = smsMessage.getMessageBody();
+                            SmsMessage[] messages = new SmsMessage[pdus.length];
+                            String sender = null;
 
-                                if (message.startsWith(KeyExchangeManager.PUBLIC_KEY_PREFIX)) {
-                                    keyExchangeManager.receivePublicKey(sender, message);
-                                    Toast.makeText(context, "Received key from " + sender, Toast.LENGTH_SHORT).show();
-                                    return;
+                            // Construct all SmsMessage objects
+                            for (int i = 0; i < pdus.length; i++) {
+                                messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                            }
+
+                            // Build full message from parts
+                            StringBuilder fullMessageBuilder = new StringBuilder();
+                            for (SmsMessage msg : messages) {
+                                if (sender == null) {
+                                    sender = msg.getDisplayOriginatingAddress();
                                 }
-
-                                // Check if the sender matches the saved phone number
-                                if (phoneNumber != null && sender.equals(phoneNumber)) {
-                                    String displayText;
-
-                                    if (isEncrypted(message)) {
-                                        SecretKey key = keyExchangeManager.getSharedKey(sender);
-                                        if (key != null) {
-                                            try {
-                                                displayText = EncryptionHelper.decrypt(message, (SecretKeySpec) key);
-                                            } catch (Exception e) {
-                                                displayText = "[Failed to decrypt]";
-                                            }
-                                        } else {
-                                            displayText = "[Encrypted message – key not exchanged yet]";
-                                        }
-                                    } else {
-                                        displayText = message;
-                                    }
-
-                                    // Add the message to the list and update the UI
-                                    messageList.add(new MessageItem(displayText, false)); // false indicates a received message
-                                    adapter.notifyItemInserted(messageList.size() - 1);
-                                    recyclerView.scrollToPosition(messageList.size() - 1);
-
-                                    //Toast.makeText(context, "Message received from: " + sender, Toast.LENGTH_SHORT).show();
+                                String body = msg.getMessageBody();
+                                if (body.startsWith(KeyExchangeManager.PUBLIC_KEY_PREFIX)) {
+                                    keyExchangeManager.receivePublicKey(sender, body); // Only this part
+                                    Toast.makeText(context, "Received key part from " + sender, Toast.LENGTH_SHORT).show();
+                                } else {
+                                    fullMessageBuilder.append(body); // For regular (non-key) messages
                                 }
                             }
+
+                            String fullMessage = fullMessageBuilder.toString();
+
+                            // Check if the sender matches the saved phone number
+                            if (phoneNumber != null && sender.equals(phoneNumber)) {
+                                String displayText;
+
+                                if (isEncrypted(fullMessage)) {
+                                    SecretKey key = keyExchangeManager.getSharedKey(sender);
+                                    if (key != null) {
+                                        try {
+                                            displayText = EncryptionHelper.decrypt(fullMessage, (SecretKeySpec) key);
+                                        } catch (Exception e) {
+                                            displayText = "[Failed to decrypt]";
+                                        }
+                                    } else {
+                                        displayText = "[Encrypted message – key not exchanged yet]";
+                                    }
+                                } else if(isSecretKey(fullMessage)){
+                                    displayText = "___ PUBLIC KEY ___";
+                                } else{
+                                    displayText = fullMessage;
+                                }
+
+                                // Add the message to the list and update the UI
+                                messageList.add(new MessageItem(displayText, false)); // false indicates a received message
+                                adapter.notifyItemInserted(messageList.size() - 1);
+                                recyclerView.scrollToPosition(messageList.size() - 1);
+
+                                //Toast.makeText(context, "Message received from: " + sender, Toast.LENGTH_SHORT).show();
+                            }
+
                         }
                     }
                 }
@@ -231,6 +257,8 @@ public class TextingActivity extends AppCompatActivity {
                         } else {
                             displayText = "[Encrypted message – key not exchanged yet]";
                         }
+                    } else if (isSecretKey(body)){
+                        displayText = "___ PUBLIC KEY ___";
                     } else {
                         displayText = body;
                     }
@@ -250,12 +278,9 @@ public class TextingActivity extends AppCompatActivity {
         SecretKey sharedKey = keyExchangeManager.getSharedKey(phoneNumber);
 
         if (sharedKey == null) {
-            // No shared key exists → Start key exchange
-            String publicKeyMessage = keyExchangeManager.generateAndEncodePublicKey();
-            SmsManager.getDefault().sendTextMessage(phoneNumber, null, publicKeyMessage, null, null);
-            Toast.makeText(this, "Sending encryption key to " + phoneNumber, Toast.LENGTH_SHORT).show();
-
-            // Optional: add pending message to a queue until key exchange is completed
+            // No shared key exists -> Start key exchange
+            keyExchangeManager.initiateKeyExchange(this, phoneNumber);
+            Toast.makeText(this, "Initiating key exchange with " + phoneNumber, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -321,6 +346,9 @@ public class TextingActivity extends AppCompatActivity {
 
     public static boolean isEncrypted(String text) {
         return text.startsWith("[GEMBOS]");
+    }
+    public static boolean isSecretKey(String text) {
+        return text.startsWith("[KEYX]");
     }
 
 }
