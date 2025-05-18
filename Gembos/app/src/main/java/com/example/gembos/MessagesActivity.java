@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -52,6 +53,8 @@ public class MessagesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
+        dbHelper = new DBHelper(this);
+
         MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
         setSupportActionBar(topAppBar);
 
@@ -66,6 +69,8 @@ public class MessagesActivity extends AppCompatActivity {
             public void onClick(View v) {
                 syncManager.sendUnsyncedUsersToServer();
                 Toast.makeText(MessagesActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
+                Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
+                syncManager.sendUnsyncedMessagesToServer();
             }
         });
 
@@ -143,10 +148,11 @@ public class MessagesActivity extends AppCompatActivity {
                     String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
                     String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
+                    Message message = new Message(address, body, date);
+                    targetList.add(message);
+
                     if (body != null && body.startsWith("[GEMBOS]")) {
-                        Message message = new Message(address, body, date);
-                        targetList.add(message);
-                        dbHelper.insertMessage(message); // burada SQLite’a kaydediyoruz
+                        dbHelper.insertMessage(message);
                     }
                 }
             }
@@ -155,6 +161,8 @@ public class MessagesActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to load SMS from " + uri.toString(), Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
 
     // Helper method to get contact name from phone number

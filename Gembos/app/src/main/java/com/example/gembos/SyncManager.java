@@ -3,6 +3,7 @@ package com.example.gembos;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -11,13 +12,14 @@ import retrofit2.Response;
 
 public class SyncManager {
     private Context context;
+    private final DBHelper dbHelper;
 
     public SyncManager(Context context) {
         this.context = context;
+        this.dbHelper = new DBHelper(context);
     }
 
     public void sendUnsyncedUsersToServer() {
-        DBHelper dbHelper = new DBHelper(context);
         List<UserModel> unsyncedUsers = dbHelper.getUnsyncedUsers();
 
         if (unsyncedUsers.isEmpty()) {
@@ -50,7 +52,7 @@ public class SyncManager {
     }
 
     public void sendUnsyncedMessagesToServer() {
-        DBHelper dbHelper = new DBHelper(context);
+        Log.d("SYNC", "sendUnsyncedMessagesToServer() çağrıldı");
         List<Message> unsyncedMessages = dbHelper.getUnsyncedMessages();
 
         if (unsyncedMessages.isEmpty()) {
@@ -58,27 +60,41 @@ public class SyncManager {
             return;
         }
 
+        // Mesajları yeniden şifrele
+        List<Message> encryptedMessages = new ArrayList<>();
+        for (Message msg : unsyncedMessages) {
+            String encryptedBody = EncryptionHelper.encrypt(msg.getBody());
+            Message encryptedMsg = new Message(msg.getSender(), encryptedBody, msg.getDate());
+            encryptedMsg.setId(msg.getId()); // ID'yi de koru
+            encryptedMessages.add(encryptedMsg);
+        }
+
         UserApiService apiService = ApiClient.getRetrofit().create(UserApiService.class);
 
-        for (Message msg : unsyncedMessages) {
-            Call<Void> call = apiService.syncMultipleMessage(msg);
-            call.enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.isSuccessful()) {
-                        Log.d("SYNC", "Mesaj senkronize edildi: " + msg.getBody());
-                        dbHelper.markMessageAsSynced(msg);
-                    } else {
-                        Log.e("SYNC", "Mesaj senkronize edilemedi. Sunucu hatası: " + response.code());
+        // Mesajları API'ye gönder
+        Call<Void> call = apiService.syncMultipleMessage(encryptedMessages);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("SYNC", "Tüm mesajlar senkronize edildi.");
+                    // Başarıyla gönderilen mesajları senkronize olarak işaretle
+                    for (Message msg : unsyncedMessages) {
+                        dbHelper.markMessageAsSynced(msg); // Veritabanında 'synced' olarak işaretle
                     }
+                } else {
+                    Log.e("SYNC", "Mesaj senkronizasyonu başarısız. Kod: " + response.code());
                 }
+            }
 
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    Log.e("SYNC", "Mesaj gönderim hatası: " + t.getMessage());
-                }
-            });
-        }
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("SYNC", "Mesaj senkronizasyonu sırasında hata oluştu: " + t.getMessage());
+                t.printStackTrace();  // Hatanın detaylarını logla
+            }
+        });
     }
+
+
 
 }

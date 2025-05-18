@@ -1,12 +1,18 @@
 package com.example.gembos;
 
+import static com.example.gembos.EncryptionHelper.decrypt;
+import static com.example.gembos.EncryptionHelper.encrypt;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -16,20 +22,22 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String DBName = "register.db";
 
     public DBHelper(@Nullable Context context) {
-        super(context, DBName, null, 4);
+        super(context, DBName, null, 5);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table users(phoneNumber TEXT primary key, name TEXT, surname TEXT, password TEXT, isVerified INTEGER, isSynced INTEGER, verificationCode TEXT)");
 
-        db.execSQL("create table messages(id TEXT primary key AUTOINCREMENT, sender TEXT NOT NULL, body TEXT NOT NULL, date TEXT NOT NULL, synced INTEGER DEFAULT 0)");
+        db.execSQL("create table messages(id INTEGER primary key AUTOINCREMENT, sender TEXT NOT NULL, body TEXT NOT NULL, date TEXT NOT NULL, synced INTEGER DEFAULT 0, UNIQUE(sender, body, date))");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS users");
+        db.execSQL("DROP TABLE IF EXISTS messages");
         onCreate(db);
+
     }
 
     public boolean insertData(String phoneNumber, String name, String surname, String password){
@@ -53,11 +61,19 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("sender", message.getSender());
+        //values.put("body", encrypt(message.getBody()));
         values.put("body", message.getBody());
-        values.put("date", message.getDate());
+        values.put("date", String.valueOf(message.getDate()));
         values.put("synced", 0); // yeni mesaj senkronize edilmedi
 
-        db.insert("messages", null, values);
+        Log.d("DB", "Mesaj veritabanına ekleniyor: " + message.getBody());
+        long result = db.insertWithOnConflict("messages", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
+        if (result == -1) {
+            Log.e("DB", "Mesaj veritabanına EKLENEMEDİ: " + message.getBody());
+        } else {
+            Log.d("DB", "Mesaj veritabanına eklendi: " + message.getBody());
+        }
     }
 
     public String generateVerificationCode(){
@@ -167,14 +183,26 @@ public class DBHelper extends SQLiteOpenHelper {
                 null, null, null
         );
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
         if (cursor.moveToFirst()) {
             do {
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
                 String sender = cursor.getString(cursor.getColumnIndexOrThrow("sender"));
-                String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
-                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                String encryptedBody = cursor.getString(cursor.getColumnIndexOrThrow("body"));
+                String dateStr = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
-                Message msg = new Message(id, sender, body, date);
+                long timestamp = 0;
+                try {
+                    timestamp = Long.parseLong(dateStr);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+                String formattedDate = timestamp > 0 ? sdf.format(new Date(timestamp)) : dateStr;
+
+                // Mesaj oluştur, tarih olarak formatlanmış date verisini veriyoruz
+                Message msg = new Message(id, sender, encryptedBody, formattedDate);
                 messages.add(msg);
             } while (cursor.moveToNext());
         }
@@ -182,6 +210,7 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
         return messages;
     }
+
 
 
     public void markUserAsSynced(String phoneNumber) {

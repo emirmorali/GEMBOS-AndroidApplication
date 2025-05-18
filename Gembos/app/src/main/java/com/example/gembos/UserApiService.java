@@ -11,5 +11,5 @@ public interface UserApiService {
     Call<Void> syncUsers(@Body List<UserModel> users);
 
     @POST("/api/Message/SyncMultipleMessage")
-    Call<Void> syncMultipleMessage(@Body Message message);
+    Call<Void> syncMultipleMessage(@Body List<Message> messages);
 }
