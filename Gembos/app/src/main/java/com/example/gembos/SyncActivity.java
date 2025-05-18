@@ -1,6 +1,7 @@
 package com.example.gembos;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -22,6 +23,8 @@ public class SyncActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 syncManager.sendUnsyncedUsersToServer();
+                Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
+                syncManager.sendUnsyncedMessagesToServer();
                 Toast.makeText(SyncActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
             }
         });

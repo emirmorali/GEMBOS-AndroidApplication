@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -38,6 +39,7 @@ public class MessagesActivity extends AppCompatActivity {
     private MessageAdapter adapter;
     private FloatingActionButton syncButton;
     private SyncManager syncManager;
+    DBHelper dbHelper;
 
     private BroadcastReceiver smsReceiver = new BroadcastReceiver() {
         @Override
@@ -50,6 +52,8 @@ public class MessagesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
+
+        dbHelper = new DBHelper(this);
 
         MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
         setSupportActionBar(topAppBar);
@@ -65,6 +69,8 @@ public class MessagesActivity extends AppCompatActivity {
             public void onClick(View v) {
                 syncManager.sendUnsyncedUsersToServer();
                 Toast.makeText(MessagesActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
+                Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
+                syncManager.sendUnsyncedMessagesToServer();
             }
         });
 
@@ -144,6 +150,10 @@ public class MessagesActivity extends AppCompatActivity {
 
                     Message message = new Message(address, body, date);
                     targetList.add(message);
+
+                    if (body != null && body.startsWith("[GEMBOS]")) {
+                        dbHelper.insertMessage(message);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -151,6 +161,8 @@ public class MessagesActivity extends AppCompatActivity {
             //Toast.makeText(this, "Failed to load SMS from " + uri.toString(), Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
 
     // Helper method to get contact name from phone number
