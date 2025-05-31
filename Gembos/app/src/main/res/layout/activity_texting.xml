@@ -11,6 +11,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="16dp"
+        android:background="@color/buttonColor"
         android:scrollbars="vertical" />
 
     <!-- Mesaj gönderim alanı -->
@@ -18,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/black"
+        android:background="@color/teal"
         android:padding="8dp">
 
         <EditText
@@ -28,6 +29,7 @@
             android:layout_weight="1"
             android:background="@drawable/rounded_edit_text"
             android:hint="Type message..."
+            android:backgroundTint="@color/beige"
             android:padding="10dp"
             android:textColor="@color/darkBlue"
             android:textColorHint="@color/darkBlue" />
@@ -36,9 +38,10 @@
             android:id="@+id/btnSend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/accentOrange"
+            android:backgroundTint="@color/newBlue"
             android:text="Send"
-            android:textColor="@color/lightBeige" />
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/black" />
     </LinearLayout>
 
     <!-- Animasyonlu seçenek menüsü -->

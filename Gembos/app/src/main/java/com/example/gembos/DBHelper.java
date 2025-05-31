@@ -22,12 +22,12 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String DBName = "register.db";
 
     public DBHelper(@Nullable Context context) {
-        super(context, DBName, null, 5);
+        super(context, DBName, null, 6);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table users(phoneNumber TEXT primary key, name TEXT, surname TEXT, password TEXT, isVerified INTEGER, isSynced INTEGER, verificationCode TEXT)");
+        db.execSQL("create table users(phoneNumber TEXT primary key, name TEXT, surname TEXT, password TEXT, isVerified INTEGER, isSynced INTEGER, verificationCode TEXT, profileImage TEXT, about TEXT)");
 
         db.execSQL("create table messages(id INTEGER primary key AUTOINCREMENT, sender TEXT NOT NULL, body TEXT NOT NULL, date TEXT NOT NULL, synced INTEGER DEFAULT 0, UNIQUE(sender, body, date))");
     }
@@ -228,6 +228,36 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.update("messages", values, "id = ?", new String[]{String.valueOf(message.getId())});
     }
+
+    public ProfileModel getUserByPhone() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM users LIMIT 1", null);
+
+        ProfileModel user = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            String phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow("phoneNumber"));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+            String surname = cursor.getString(cursor.getColumnIndexOrThrow("surname"));
+            String password = cursor.getString(cursor.getColumnIndexOrThrow("password"));
+            String about = cursor.getString(cursor.getColumnIndexOrThrow("about"));
+            String profileImage = cursor.getString(cursor.getColumnIndexOrThrow("profileImage"));
+            user = new ProfileModel(phoneNumber, name, surname, password, about, profileImage);
+
+            cursor.close();
+        }
+        return user;
+    }
+
+    public void updateUserProfile(String phoneNumber, String about, String imageUri) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("about", about);
+        values.put("profileImage", imageUri);
+        db.update("users", values, "phoneNumber = ?", new String[]{phoneNumber});
+        db.close();
+    }
+
+
 
 
 }

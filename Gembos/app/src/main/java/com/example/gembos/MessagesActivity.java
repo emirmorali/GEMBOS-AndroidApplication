@@ -2,6 +2,9 @@ package com.example.gembos;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -18,6 +22,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,18 +46,82 @@ public class MessagesActivity extends AppCompatActivity {
     private FloatingActionButton syncButton;
     private SyncManager syncManager;
     DBHelper dbHelper;
+    private List<Message> originalMessageList = new ArrayList<>();
+    private static final int PERMISSION_REQUEST_NOTIFICATIONS = 101;
+
 
     private BroadcastReceiver smsReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            loadSmsInbox(); // reload messages when a new SMS is received
+            loadSmsInbox();
+
+            // Yeni SMS bilgisini alalım (Intent içinden)
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                Object[] pdus = (Object[]) bundle.get("pdus");
+                if (pdus != null && pdus.length > 0) {
+                    android.telephony.SmsMessage sms = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[0]);
+                    String sender = sms.getDisplayOriginatingAddress();
+                    String message = sms.getMessageBody();
+
+                    showNewMessageNotification(sender, message);
+                }
+            }
         }
     };
+
+    private void showNewMessageNotification(String sender, String message) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            // Bildirim izni yok, sessizce geç veya kullanıcıyı bilgilendir
+            Log.w("Notifications", "Notification permission not granted, not displayed.");
+            return;
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "messages_channel")
+                .setSmallIcon(R.drawable.ic_message)
+                .setContentTitle("New Message - " + sender)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        Intent intent = new Intent(this, MessagesActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        PERMISSION_REQUEST_NOTIFICATIONS);
+            }
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "messages_channel",
+                    "Message Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Notifications for new incoming messages");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
 
         dbHelper = new DBHelper(this);
 
@@ -69,7 +139,6 @@ public class MessagesActivity extends AppCompatActivity {
             public void onClick(View v) {
                 syncManager.sendUnsyncedUsersToServer();
                 Toast.makeText(MessagesActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
-                Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
                 syncManager.sendUnsyncedMessagesToServer();
             }
         });
@@ -90,6 +159,62 @@ public class MessagesActivity extends AppCompatActivity {
         } else {
             loadSmsInbox();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
+
+        android.view.MenuItem searchItem = menu.findItem(R.id.action_search);
+        androidx.appcompat.widget.SearchView searchView = (androidx.appcompat.widget.SearchView) searchItem.getActionView();
+
+        searchView.setQueryHint("Search...");
+        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterMessages(newText);
+                return true;
+            }
+        });
+
+        return true;
+    }
+
+    private void filterMessages(String query) {
+        List<Message> filteredList = new ArrayList<>();
+
+        for (Message message : originalMessageList) {
+            if (message.getSender().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(message);
+            }
+        }
+
+        messageList.clear();
+        messageList.addAll(filteredList);
+        adapter.notifyDataSetChanged();
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            //Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        } else if (id == R.id.action_profile) {
+            //Toast.makeText(this, "Profile clicked", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, ProfileActivity.class));
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -137,6 +262,10 @@ public class MessagesActivity extends AppCompatActivity {
         );
 
         adapter.notifyDataSetChanged();
+
+        originalMessageList.clear();
+        originalMessageList.addAll(messageList);
+
 
     }
 

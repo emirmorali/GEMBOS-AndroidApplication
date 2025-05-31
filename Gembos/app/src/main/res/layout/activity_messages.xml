@@ -4,34 +4,41 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:backgroundTint="@color/newBlue"
+    android:background="#F8F9FA">
 
     <!-- AppBar with Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
+            android:layout_height="match_parent"
+            android:background="@color/newBlue"
             android:title="GEMBOS"
             android:titleTextColor="@android:color/white"
+            android:elevation="4dp"
             app:titleCentered="true"
             app:menu="@menu/top_app_bar_menu" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- RecyclerView below the Toolbar -->
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messageRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        android:layout_marginBottom="72dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="0dp"
+        android:background="@color/buttonColor"
+        android:layout_marginBottom="0dp"
         android:clipToPadding="false"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/item_message" />
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -39,8 +46,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:contentDescription="New Message"
-        android:src="@drawable/sync" />
+        android:layout_margin="20dp"
+        android:contentDescription="Sync Messages"
+        android:src="@drawable/sync"
+        android:tint="@android:color/white"
+        android:backgroundTint="?attr/colorSecondary"
+        app:rippleColor="#33000000"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
