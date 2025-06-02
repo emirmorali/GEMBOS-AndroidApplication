@@ -139,15 +139,18 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                     sender = msg.getDisplayOriginatingAddress();
                                 }
                                 String body = msg.getMessageBody();
-                                if (body.startsWith(KeyExchangeManager.PUBLIC_KEY_PREFIX)) {
-                                    keyExchangeManager.receivePublicKey(sender, body); // Only this part
-                                    Toast.makeText(context, "Received key part from " + sender, Toast.LENGTH_SHORT).show();
-                                } else {
-                                    fullMessageBuilder.append(body); // For regular (non-key) messages
+                                if (body.startsWith(KeyExchangeManager.PUBLIC_KEY_PREFIX) || fullMessageBuilder.toString().contains(KeyExchangeManager.PUBLIC_KEY_PREFIX)) {
+                                    fullMessageBuilder.append(body);
                                 }
                             }
 
                             String fullMessage = fullMessageBuilder.toString();
+
+                            // Check if this is a key exchange message
+                            if (fullMessage.contains(KeyExchangeManager.PUBLIC_KEY_PREFIX) && keyExchangeManager.getSharedKey(sender) == null) {
+                                keyExchangeManager.receivePublicKey(sender, fullMessage);
+                                Toast.makeText(context, "Received key message from " + sender, Toast.LENGTH_SHORT).show();
+                            }
 
                             // Check if the sender matches the saved phone number
                             if (phoneNumber != null && sender.equals(phoneNumber)) {

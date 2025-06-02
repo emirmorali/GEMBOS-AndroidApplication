@@ -63,8 +63,8 @@ public class SyncManager {
         // Mesajları yeniden şifrele
         List<Message> encryptedMessages = new ArrayList<>();
         for (Message msg : unsyncedMessages) {
-            String encryptedBody = EncryptionHelper.encrypt(msg.getBody());
-            Message encryptedMsg = new Message(msg.getSender(), encryptedBody, msg.getDate());
+            //String encryptedBody = EncryptionHelper.encrypt(msg.getBody());
+            Message encryptedMsg = new Message(msg.getSender(), msg.getBody(), msg.getDate());
             encryptedMsg.setId(msg.getId()); // ID'yi de koru
             encryptedMessages.add(encryptedMsg);
         }
