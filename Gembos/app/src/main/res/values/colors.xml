@@ -2,9 +2,19 @@
  <resources>
         <color name="black">#000000</color>
         <color name="darkBlue">#262A56</color>
+       <color name="newBlue">#93AACA</color>
         <color name="accentOrange">#B8621B</color>
         <color name="lightBeige">#E3CCAE</color>
         <color name="light_red">#FFCDD2</color>
+       <color name = "baby_blue">#808080</color>
+       <color name="buttonColor">#D4DAED</color>
+        <color name="beige">#F5EFEB</color>
+        <color name="teal">#567C8D</color>
+    <color name="warningRed">#D32F2F</color>
+    <color name="warningBlue">#263238</color>
+    <color name="softAmber">#FFF3E0</color>
+
+
 
 </resources>
 

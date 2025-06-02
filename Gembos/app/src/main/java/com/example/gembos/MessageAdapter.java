@@ -33,6 +33,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView textSender, textMessage, textDate;
         ImageView iconEncrypted;
+        View messageContainer;
 
         public MessageViewHolder(View itemView) {
             super(itemView);
@@ -40,18 +41,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             textMessage = itemView.findViewById(R.id.textMessagePreview);
             textDate = itemView.findViewById(R.id.textTime);
             iconEncrypted = itemView.findViewById(R.id.iconEncrypted);
+            messageContainer = itemView.findViewById(R.id.messageContainer); // Yakala
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
-                    // Get message and check encryption status
                     Message message = messageList.get(position);
                     boolean isEncrypted = message.getBody().startsWith("[GEMBOS]");
-                    listener.onMessageClick(message.getSender(), isEncrypted);  // Passing encryption status
+                    listener.onMessageClick(message.getSender(), isEncrypted);
                 }
             });
         }
     }
+
 
     public interface OnMessageClickListener {
         void onMessageClick(String phoneNumber, boolean isEncrypted);
@@ -74,7 +76,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         if (msg.getBody().startsWith("[GEMBOS]")) {
             // Encrypted
             holder.iconEncrypted.setVisibility(View.VISIBLE);
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white)); // Normal bg
+            holder.messageContainer.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white));
 
             try {
                 if (sharedKey != null) {
@@ -89,8 +91,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         } else {
             // Unencrypted
             holder.iconEncrypted.setVisibility(View.GONE);
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_red)); // red tone
+            holder.messageContainer.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_red)); // Kırmızı zemin sadece ConstraintLayout'a uygulanıyor
         }
+
 
         // Format date from timestamp string
         try {

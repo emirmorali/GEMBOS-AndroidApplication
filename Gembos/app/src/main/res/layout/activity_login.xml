@@ -4,44 +4,109 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:background="@color/newBlue"
     android:gravity="center"
-    android:background="@color/darkBlue"
+    android:orientation="vertical"
+    android:padding="28dp"
     tools:context=".LoginActivity">
 
-    <EditText
-        android:id="@+id/edtPhoneNumber"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Phone Number"
-        android:textColorHint="#FFFFFF"
-        android:inputType="phone"
-        android:textColor="#FFFFFF"/>
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingBottom="70dp">
 
-    <EditText
-        android:id="@+id/edtPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Password"
-        android:textColorHint="#FFFFFF"
-        android:inputType="textPassword"
-        android:textColor="#FFFFFF"/>
+        <ImageView
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:src="@drawable/gembos_logo"/>
 
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="LOGIN"
-        android:backgroundTint="@color/accentOrange"/>
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/btnRegister"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="GO TO REGISTER"
-        android:backgroundTint="@color/accentOrange"/>
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="28dp">
+
+        <!-- Phone Number -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edittext_background"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_call"
+                app:tint="#FFFFFF"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/etPhoneNumber"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Phone Number"
+                android:inputType="phone"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCCCCC"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <!-- Password -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edittext_background"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_lock_lock"
+                android:layout_marginEnd="8dp"
+                app:tint="#FFFFFF" />
+
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCCCCC"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <!-- Login and Register Buttons -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/buttonColor"
+            android:text="LOGIN" />
+
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/buttonColor"
+            android:text="REGISTER" />
+    </LinearLayout>
+
 
 </LinearLayout>

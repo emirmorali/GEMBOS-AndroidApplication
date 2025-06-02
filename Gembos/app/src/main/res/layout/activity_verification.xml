@@ -1,32 +1,72 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    tools:context=".RegisterActivity">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@color/newBlue"
+    tools:context=".VerificationActivity">
 
+    <!-- Başlık -->
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvVerificationTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Verification"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Açıklama -->
+    <TextView
+        android:id="@+id/tvVerificationInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="A 6 digit verification code has been sent to your phone number. Please enter the code." />
+        android:text="A 6-digit verification code has been sent to your phone."
+        android:textColor="#CCCCCC"
+        android:textAlignment="center"
+        android:layout_marginBottom="24dp" />
 
-    <EditText
-        android:id="@+id/edtVerificationCode"
-        android:layout_width="match_parent"
+    <!-- Kod giriş kutuları -->
+    <LinearLayout
+        android:id="@+id/otpContainer"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="number"
-        android:minHeight="48dp"
-        android:hint="Enter Verification Code" />
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="24dp">
 
+        <!-- 6 tane kutu -->
+        <EditText
+            android:id="@+id/otp1"
+            style="@style/OtpBoxStyle"/>
+        <EditText
+            android:id="@+id/otp2"
+            style="@style/OtpBoxStyle"/>
+        <EditText
+            android:id="@+id/otp3"
+            style="@style/OtpBoxStyle"/>
+        <EditText
+            android:id="@+id/otp4"
+            style="@style/OtpBoxStyle"/>
+        <EditText
+            android:id="@+id/otp5"
+            style="@style/OtpBoxStyle"/>
+        <EditText
+            android:id="@+id/otp6"
+            style="@style/OtpBoxStyle"/>
+    </LinearLayout>
+
+    <!-- Doğrula Butonu -->
     <Button
         android:id="@+id/btnVerify"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="VERIFY" />
+        android:text="VERIFY"
+        android:backgroundTint="@color/buttonColor"
+        android:textColor="@android:color/black" />
 
 </LinearLayout>

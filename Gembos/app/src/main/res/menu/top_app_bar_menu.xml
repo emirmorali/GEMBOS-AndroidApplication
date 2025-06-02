@@ -2,23 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Search Icon -->
+    <!-- Arama ikonu -->
     <item
         android:id="@+id/action_search"
-        android:icon="@drawable/ic_search"
         android:title="Search"
+        android:icon="@android:drawable/ic_menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom|collapseActionView" />
 
-        <item
+    <!-- Profil -->
+    <item
         android:id="@+id/action_profile"
-        android:title="Profile" />
-        <item
-            android:id="@+id/action_settings"
-            android:title="Settings" />
-        <item
-            android:id="@+id/action_logout"
-            android:title="Logout" />
+        android:title="Profile"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        app:showAsAction="never" />
 
+    <!-- Ayarlar -->
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:showAsAction="never" />
 
 </menu>

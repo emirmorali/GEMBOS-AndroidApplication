@@ -1,84 +1,111 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:gravity="center"
-    android:background="@color/darkBlue"
+    android:background="@color/newBlue"
     tools:context=".RegisterActivity">
 
-    <EditText
-        android:id="@+id/edtName"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:hint="Name"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#FFFFFF"/>
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal">
 
-    <EditText
-        android:id="@+id/edtSurname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:minHeight="48dp"
-        android:hint="Surname"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#FFFFFF"/>
 
-    <EditText
-        android:id="@+id/edtPhoneNumber"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="phone"
-        android:maxLength="11"
-        android:digits="0123456789"
-        android:minHeight="48dp"
-        android:hint="Phone Number (05xxxxxxxxx)"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#FFFFFF"/>
+        <ImageView
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:src="@drawable/gembos_logo"/>
+        <!-- Name -->
+        <EditText
+            android:id="@+id/edtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name"
+            android:inputType="text"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#CCCCCC"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
 
-    <EditText
-        android:id="@+id/edtPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPassword"
-        android:minHeight="48dp"
-        android:hint="Password"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#FFFFFF"/>
+        <!-- Surname -->
+        <EditText
+            android:id="@+id/edtSurname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Surname"
+            android:inputType="text"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#CCCCCC"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
 
-    <EditText
-        android:id="@+id/edtPasswordAgain"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPassword"
-        android:minHeight="48dp"
-        android:hint="Password Again"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#FFFFFF"/>
+        <!-- Phone Number -->
+        <EditText
+            android:id="@+id/edtPhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phone Number (05xxxxxxxxx)"
+            android:inputType="phone"
+            android:maxLength="11"
+            android:digits="0123456789"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#CCCCCC"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
 
-    <Button
-        android:id="@+id/btnRegister"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="REGISTER"
-        android:backgroundTint="@color/accentOrange"/>
+        <!-- Password -->
+        <EditText
+            android:id="@+id/edtPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#CCCCCC"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
 
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="GO TO LOGIN"
-        android:backgroundTint="@color/accentOrange"/>
+        <!-- Password Again -->
+        <EditText
+            android:id="@+id/edtPasswordAgain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password Again"
+            android:inputType="textPassword"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#CCCCCC"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp" />
 
-</LinearLayout>
+        <!-- Register Button -->
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="REGISTER"
+            android:textColor="@android:color/black"
+            android:backgroundTint="@color/buttonColor"
+            android:layout_marginBottom="12dp"
+            android:minHeight="48dp" />
+
+        <!-- Login Button -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="GO TO LOGIN"
+            android:textColor="@android:color/black"
+            android:backgroundTint="@color/buttonColor"
+            android:minHeight="48dp" />
+
+    </LinearLayout>
+</ScrollView>
