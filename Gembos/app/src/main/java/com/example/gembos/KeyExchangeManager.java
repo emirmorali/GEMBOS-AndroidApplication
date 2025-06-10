@@ -115,10 +115,8 @@ public class KeyExchangeManager {
 
                     Log.d(TAG, "Received complete key and responded with public key" + responsePublicKey + " to " + sender);
                 }
-                else {
-                    // Key pair already exists - complete key exchange
-                    completeKeyExchange(sender);
-                }
+
+                completeKeyExchange(sender);
 
                 // Notify UI that a key was received
                 if (callback != null) {

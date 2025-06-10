@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -161,6 +162,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                     if (key != null) {
                                         try {
                                             displayText = EncryptionHelper.decrypt(fullMessage, (SecretKeySpec) key);
+                                            Log.e("KEY_DHKE", "Decryption Key: " + key);
                                         } catch (Exception e) {
                                             displayText = "[Failed to decrypt]";
                                         }
