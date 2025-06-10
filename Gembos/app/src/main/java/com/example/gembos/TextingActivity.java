@@ -162,12 +162,32 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                     if (key != null) {
                                         try {
                                             displayText = EncryptionHelper.decrypt(fullMessage, (SecretKeySpec) key);
-                                            Log.e("KEY_DHKE", "Decryption Key: " + key);
                                         } catch (Exception e) {
                                             displayText = "[Failed to decrypt]";
                                         }
+                                        messageList.add(new MessageItem(displayText, false));
+                                        adapter.notifyItemInserted(messageList.size() - 1);
+                                        recyclerView.scrollToPosition(messageList.size() - 1);
                                     } else {
-                                        displayText = "[Encrypted message – key not exchanged yet]";
+                                        // Delay retrying decryption until key is ready
+                                        String finalSender = sender;
+                                        new android.os.Handler().postDelayed(() -> {
+                                            SecretKey retryKey = keyExchangeManager.getSharedKey(finalSender);
+                                            String retryText;
+                                            if (retryKey != null) {
+                                                try {
+                                                    retryText = EncryptionHelper.decrypt(fullMessage, (SecretKeySpec) retryKey);
+                                                } catch (Exception e) {
+                                                    retryText = "[Failed to decrypt after retry]";
+                                                }
+                                            } else {
+                                                retryText = "[Encrypted message – key not available after retry]";
+                                            }
+
+                                            messageList.add(new MessageItem(retryText, false));
+                                            adapter.notifyItemInserted(messageList.size() - 1);
+                                            recyclerView.scrollToPosition(messageList.size() - 1);
+                                        }, 1000); // Delay 1 second (adjust as needed)
                                     }
                                 } else if(isSecretKey(fullMessage)){
                                     displayText = "___ PUBLIC KEY ___";
