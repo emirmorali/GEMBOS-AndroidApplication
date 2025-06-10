@@ -74,12 +74,9 @@ public class MessagesActivity extends AppCompatActivity {
                 Toast.makeText(MessagesActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
                 Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
 
-                // Şifreleme anahtarlarını tanımla
-                byte[] localKey = "1234567890123456".getBytes(StandardCharsets.UTF_8);  // 16-byte örnek key
-                byte[] masterKey = "6543210987654321".getBytes(StandardCharsets.UTF_8); // 16-byte örnek master key
-
                 // Mesajları sunucuya şifreleyip gönder
-                syncManager.sendUnsyncedMessagesToServer(localKey, masterKey);
+                //syncManager.sendUnsyncedMessagesToServer(MasterKey.getMasterKey());
+                syncManager.sendUnsyncedMessagesToServer();
             }
         });
 

@@ -4,7 +4,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
-    private static final String BASE_URL = "https://gembosapi.oa.r.appspot.com";
+    private static final String BASE_URL = "https://gembos-dot-qa-api-462416.oa.r.appspot.com";
     private static Retrofit retrofit;
 
     public static Retrofit getRetrofit() {
