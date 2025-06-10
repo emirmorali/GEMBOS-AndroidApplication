@@ -6,6 +6,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.crypto.spec.SecretKeySpec;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,8 +53,9 @@ public class SyncManager {
         });
     }
 
-    public void sendUnsyncedMessagesToServer() {
+    public void sendUnsyncedMessagesToServer(byte[] localKeyBytes, byte[] masterKeyBytes) {
         Log.d("SYNC", "sendUnsyncedMessagesToServer() çağrıldı");
+
         List<Message> unsyncedMessages = dbHelper.getUnsyncedMessages();
 
         if (unsyncedMessages.isEmpty()) {
@@ -60,40 +63,61 @@ public class SyncManager {
             return;
         }
 
-        // Mesajları yeniden şifrele
-        List<Message> encryptedMessages = new ArrayList<>();
-        for (Message msg : unsyncedMessages) {
-           // String encryptedBody = EncryptionHelper.encrypt(msg.getBody());
-            Message encryptedMsg = new Message(msg.getSender(), msg.getBody(), msg.getDate());
-            encryptedMsg.setId(msg.getId()); // ID'yi de koru
-            encryptedMessages.add(encryptedMsg);
+
+        List<Message> encryptedMessagesForAPI = new ArrayList<>();
+
+        try {
+            SecretKeySpec localKeySpec = EncryptionHelper.deriveAESKey(localKeyBytes);
+            SecretKeySpec masterKeySpec = EncryptionHelper.deriveAESKey(masterKeyBytes);
+
+            for (Message msg : unsyncedMessages) {
+                String decryptedText;
+
+                if (EncryptionHelper.isEncrypted(msg.getBody())) {
+                    decryptedText = EncryptionHelper.decrypt(msg.getBody(), localKeySpec);
+                } else {
+                    decryptedText = msg.getBody();
+                }
+
+                String encryptedForAPI = EncryptionHelper.encrypt(decryptedText, masterKeySpec);
+
+                Message encryptedMsg = new Message(msg.getSender(), encryptedForAPI, msg.getDate());
+                encryptedMsg.setId(msg.getId());
+                encryptedMessagesForAPI.add(encryptedMsg);
+            }
+
+        } catch (Exception e) {
+            Log.e("SYNC", "Şifreleme sırasında hata oluştu: " + e.getMessage());
+            e.printStackTrace();
+            return;
+
         }
 
+        // API gönderimi
         UserApiService apiService = ApiClient.getRetrofit().create(UserApiService.class);
+        Call<Void> call = apiService.syncMultipleMessage(encryptedMessagesForAPI);
 
-        // Mesajları API'ye gönder
-        Call<Void> call = apiService.syncMultipleMessage(encryptedMessages);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    Log.d("SYNC", "Tüm mesajlar senkronize edildi.");
-                    // Başarıyla gönderilen mesajları senkronize olarak işaretle
-                    for (Message msg : unsyncedMessages) {
-                        dbHelper.markMessageAsSynced(msg); // Veritabanında 'synced' olarak işaretle
+                    Log.d("SYNC", "Mesajlar başarıyla senkronize edildi.");
+                    for (Message msg : encryptedMessagesForAPI) {
+                        dbHelper.markMessageAsSynced(msg);
                     }
                 } else {
-                    Log.e("SYNC", "Mesaj senkronizasyonu başarısız. Kod: " + response.code());
+                    Log.e("SYNC", "Mesaj senkronizasyonu başarısız. Sunucu hatası: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Log.e("SYNC", "Mesaj senkronizasyonu sırasında hata oluştu: " + t.getMessage());
-                t.printStackTrace();  // Hatanın detaylarını logla
+                Log.e("SYNC", "Mesaj senkronizasyonunda hata: " + t.getMessage());
             }
         });
     }
+
+
 
 
 

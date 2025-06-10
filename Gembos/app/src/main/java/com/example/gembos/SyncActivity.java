@@ -24,7 +24,7 @@ public class SyncActivity extends AppCompatActivity {
             public void onClick(View view) {
                 syncManager.sendUnsyncedUsersToServer();
                 Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
-                syncManager.sendUnsyncedMessagesToServer();
+                //syncManager.sendUnsyncedMessagesToServer();
                 Toast.makeText(SyncActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
             }
         });

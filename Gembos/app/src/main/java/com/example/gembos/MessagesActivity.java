@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -139,7 +140,16 @@ public class MessagesActivity extends AppCompatActivity {
             public void onClick(View v) {
                 syncManager.sendUnsyncedUsersToServer();
                 Toast.makeText(MessagesActivity.this, "Synchronization Started", Toast.LENGTH_SHORT).show();
-                syncManager.sendUnsyncedMessagesToServer();
+
+                Log.d("DEBUG", "Mesaj senkronizasyonu başlatılıyor.");
+
+                // Şifreleme anahtarlarını tanımla
+                byte[] localKey = "1234567890123456".getBytes(StandardCharsets.UTF_8);  // 16-byte örnek key
+                byte[] masterKey = "6543210987654321".getBytes(StandardCharsets.UTF_8); // 16-byte örnek master key
+
+                // Mesajları sunucuya şifreleyip gönder
+                syncManager.sendUnsyncedMessagesToServer(localKey, masterKey);
+
             }
         });
 
