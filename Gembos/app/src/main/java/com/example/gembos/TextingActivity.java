@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -37,7 +38,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class TextingActivity extends AppCompatActivity implements KeyExchangeCallback{
     private String phoneNumber;
     private boolean isEncrypted;
-    private com.example.gembos.KeyExchangeManager keyExchangeManager;
+    private KeyExchangeManager keyExchangeManager;
 
     private RecyclerView recyclerView;
     private MessageItemAdapter adapter;
@@ -155,7 +156,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
 
                             // Check if the sender matches the saved phone number
                             if (phoneNumber != null && sender.equals(phoneNumber)) {
-                                String displayText;
+                                String displayText = "";
 
                                 if (isEncrypted(fullMessage)) {
                                     SecretKey key = keyExchangeManager.getSharedKey(sender);
@@ -171,7 +172,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                     } else {
                                         // Delay retrying decryption until key is ready
                                         String finalSender = sender;
-                                        new android.os.Handler().postDelayed(() -> {
+                                        new Handler().postDelayed(() -> {
                                             SecretKey retryKey = keyExchangeManager.getSharedKey(finalSender);
                                             String retryText;
                                             if (retryKey != null) {
