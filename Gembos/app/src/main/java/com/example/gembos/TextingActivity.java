@@ -140,16 +140,17 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                     sender = msg.getDisplayOriginatingAddress();
                                 }
                                 String body = msg.getMessageBody();
-                                if (body.startsWith(KeyExchangeManager.PUBLIC_KEY_PREFIX) || fullMessageBuilder.toString().contains(KeyExchangeManager.PUBLIC_KEY_PREFIX)) {
+                                if (body!=null) {
                                     fullMessageBuilder.append(body);
                                 }
                             }
 
                             String fullMessage = fullMessageBuilder.toString();
+                            Log.e("FULL_MESSAGE", fullMessage);
 
                             // Check if this is a key exchange message
-                            if (fullMessage.contains(KeyExchangeManager.PUBLIC_KEY_PREFIX) && keyExchangeManager.getSharedKey(sender) == null) {
-                                keyExchangeManager.receivePublicKey(sender, fullMessage);
+                            if (fullMessage.contains(KeyExchangeManager.PUBLIC_KEY_PREFIX) && keyExchangeManager.getSharedKey(sender, getApplicationContext()) == null) {
+                                keyExchangeManager.receivePublicKey(sender, fullMessage, context);
                                 Toast.makeText(context, "Received key message from " + sender, Toast.LENGTH_SHORT).show();
                             }
 
@@ -158,7 +159,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                 String displayText;
 
                                 if (isEncrypted(fullMessage)) {
-                                    SecretKey key = keyExchangeManager.getSharedKey(sender);
+                                    SecretKey key = keyExchangeManager.getSharedKey(sender, getApplicationContext());
                                     if (key != null) {
                                         try {
                                             displayText = EncryptionHelper.decrypt(fullMessage, (SecretKeySpec) key);
@@ -251,7 +252,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                     String displayText;
 
                     if (isEncrypted(body)) {
-                        SecretKey key = keyExchangeManager.getSharedKey(number);
+                        SecretKey key = keyExchangeManager.getSharedKey(number, getApplicationContext());
                         if (key != null) {
                             try {
                                 displayText = EncryptionHelper.decrypt(body, (SecretKeySpec) key);
@@ -279,7 +280,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
 
     private void sendSMS() {
         String messageText = editMessageText.getText().toString();
-        SecretKey sharedKey = keyExchangeManager.getSharedKey(phoneNumber);
+        SecretKey sharedKey = keyExchangeManager.getSharedKey(phoneNumber, getApplicationContext());
 
         if (sharedKey == null) {
             // No shared key exists -> Start key exchange
