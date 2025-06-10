@@ -150,7 +150,7 @@ public class KeyExchangeManager {
             SecretKey secretKey = EncryptionHelper.deriveAESKey(sharedSecret);
             sharedKeys.put(sender, secretKey);
 
-            Log.d(TAG, "Key exchange completed with " + sender);
+            Log.d(TAG, "Key exchange completed with key: " + secretKey);
 
         } catch (Exception e) {
             Log.e(TAG, "Error completing key exchange: " + e.getMessage());
