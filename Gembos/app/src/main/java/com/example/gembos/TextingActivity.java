@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -38,7 +37,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class TextingActivity extends AppCompatActivity implements KeyExchangeCallback{
     private String phoneNumber;
     private boolean isEncrypted;
-    private KeyExchangeManager keyExchangeManager;
+    private com.example.gembos.KeyExchangeManager keyExchangeManager;
 
     private RecyclerView recyclerView;
     private MessageItemAdapter adapter;
@@ -156,7 +155,7 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
 
                             // Check if the sender matches the saved phone number
                             if (phoneNumber != null && sender.equals(phoneNumber)) {
-                                String displayText = "";
+                                String displayText;
 
                                 if (isEncrypted(fullMessage)) {
                                     SecretKey key = keyExchangeManager.getSharedKey(sender);
@@ -166,29 +165,8 @@ public class TextingActivity extends AppCompatActivity implements KeyExchangeCal
                                         } catch (Exception e) {
                                             displayText = "[Failed to decrypt]";
                                         }
-                                        messageList.add(new MessageItem(displayText, false));
-                                        adapter.notifyItemInserted(messageList.size() - 1);
-                                        recyclerView.scrollToPosition(messageList.size() - 1);
                                     } else {
-                                        // Delay retrying decryption until key is ready
-                                        String finalSender = sender;
-                                        new Handler().postDelayed(() -> {
-                                            SecretKey retryKey = keyExchangeManager.getSharedKey(finalSender);
-                                            String retryText;
-                                            if (retryKey != null) {
-                                                try {
-                                                    retryText = EncryptionHelper.decrypt(fullMessage, (SecretKeySpec) retryKey);
-                                                } catch (Exception e) {
-                                                    retryText = "[Failed to decrypt after retry]";
-                                                }
-                                            } else {
-                                                retryText = "[Encrypted message – key not available after retry]";
-                                            }
-
-                                            messageList.add(new MessageItem(retryText, false));
-                                            adapter.notifyItemInserted(messageList.size() - 1);
-                                            recyclerView.scrollToPosition(messageList.size() - 1);
-                                        }, 1000); // Delay 1 second (adjust as needed)
+                                        displayText = "[Encrypted message – key not exchanged yet]";
                                     }
                                 } else if(isSecretKey(fullMessage)){
                                     displayText = "___ PUBLIC KEY ___";

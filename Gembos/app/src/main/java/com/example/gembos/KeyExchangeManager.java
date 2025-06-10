@@ -152,6 +152,11 @@ public class KeyExchangeManager {
 
             Log.d(TAG, "Key exchange completed with key: " + secretKey);
 
+            // Update UI via callback
+            if (callback != null) {
+                callback.onKeyExchangeMessage("Completed key exchange with " + sender, true);
+            }
+
         } catch (Exception e) {
             Log.e(TAG, "Error completing key exchange: " + e.getMessage());
         }
