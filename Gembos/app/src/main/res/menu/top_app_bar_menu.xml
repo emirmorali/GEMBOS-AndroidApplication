@@ -22,6 +22,6 @@
         android:id="@+id/action_settings"
         android:title="Settings"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:showAsAction="never" />
+        app:showAsAction="never" />
 
 </menu>

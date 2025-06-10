@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -22,12 +23,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private List<Message> messageList;
     private OnMessageClickListener listener;
-    private SecretKey sharedKey;
+    private Map<String, SecretKey> sharedKeys;
 
-    public MessageAdapter(List<Message> messages, OnMessageClickListener listener, SecretKey sharedKey) {
+    public MessageAdapter(List<Message> messages, OnMessageClickListener listener, Map<String, SecretKey> sharedKeys) {
         this.messageList = messages;
         this.listener = listener;
-        this.sharedKey = sharedKey;
+        this.sharedKeys = sharedKeys;
     }
 
     public class MessageViewHolder extends RecyclerView.ViewHolder {
@@ -78,12 +79,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             holder.iconEncrypted.setVisibility(View.VISIBLE);
             holder.messageContainer.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white));
 
+            SecretKey sharedKey = sharedKeys != null ? sharedKeys.get(msg.getSender()) : null;
+
             try {
                 if (sharedKey != null) {
                     String decrypted = EncryptionHelper.decrypt(msg.getBody(), (SecretKeySpec) sharedKey);
                     holder.textMessage.setText(decrypted);
                 } else {
-                    holder.textMessage.setText("[Encrypted - No key]");
+                    holder.textMessage.setText("[Encrypted]");
                 }
             } catch (Exception e) {
                 holder.textMessage.setText("[Failed to decrypt]");

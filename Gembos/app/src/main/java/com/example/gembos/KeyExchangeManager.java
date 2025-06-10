@@ -3,6 +3,7 @@ package com.example.gembos;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.telephony.SmsManager;
 import android.util.Base64;
 import android.util.Log;
@@ -73,7 +74,7 @@ public class KeyExchangeManager {
     }
 
     // Receive and store the other party's public key
-    public static void receivePublicKey(String sender, String receivedKeyBase64) {
+    public static void receivePublicKey(String sender, String receivedKeyBase64, Context context) {
         try {
             // Initialize the StringBuilder for the sender if it does not exist
             if (!receivedKeyParts.containsKey(sender)) {
@@ -115,10 +116,8 @@ public class KeyExchangeManager {
 
                     Log.d(TAG, "Received complete key and responded with public key" + responsePublicKey + " to " + sender);
                 }
-                else {
-                    // Key pair already exists - complete key exchange
-                    completeKeyExchange(sender);
-                }
+
+                completeKeyExchange(sender, context);
 
                 // Notify UI that a key was received
                 if (callback != null) {
@@ -134,7 +133,7 @@ public class KeyExchangeManager {
     }
 
     // Complete the key exchange using the stored private key
-    public static void completeKeyExchange(String sender) {
+    public static void completeKeyExchange(String sender, Context context) {
         if (!keyPairs.containsKey(sender) || !receivedPublicKeys.containsKey(sender)) {
             Log.e(TAG, "Key pair or public key not available for " + sender);
             return;
@@ -152,16 +151,49 @@ public class KeyExchangeManager {
             SecretKey secretKey = EncryptionHelper.deriveAESKey(sharedSecret);
             sharedKeys.put(sender, secretKey);
 
-            Log.d(TAG, "Key exchange completed with " + sender);
+            // Save the key to preferences
+            saveSharedKey(sender, secretKey, context);
+
+            Log.d(TAG, "Key exchange completed with key: " + secretKey);
 
         } catch (Exception e) {
             Log.e(TAG, "Error completing key exchange: " + e.getMessage());
         }
     }
 
+    private static void saveSharedKey(String phoneNumber, SecretKey key, Context context) {
+        String encodedKey = Base64.encodeToString(key.getEncoded(), Base64.DEFAULT);
+        context.getSharedPreferences("KeyPrefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("key_" + phoneNumber, encodedKey)
+                .apply();
+    }
+
     // Get the shared key for a contact
-    public static SecretKey getSharedKey(String phoneNumber) {
-        return sharedKeys.get(phoneNumber);
+    public static SecretKey getSharedKey(String phoneNumber, Context context) {
+        if (sharedKeys.containsKey(phoneNumber)) {
+            return sharedKeys.get(phoneNumber);
+        }
+
+        SharedPreferences prefs = context.getSharedPreferences("KeyPrefs", Context.MODE_PRIVATE);
+        String encodedKey = prefs.getString("key_" + phoneNumber, null);
+
+        if (encodedKey != null) {
+            byte[] decodedKey = Base64.decode(encodedKey, Base64.DEFAULT);
+            SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+            sharedKeys.put(phoneNumber, key);
+            return key;
+        }
+
+        return null;  // No key found
+    }
+
+    public static void deleteSharedKey(String phoneNumber, Context context) {
+        sharedKeys.remove(phoneNumber);
+        context.getSharedPreferences("KeyPrefs", Context.MODE_PRIVATE)
+                .edit()
+                .remove("key_" + phoneNumber)
+                .apply();
     }
 
     public static boolean isKeyExchangeInProgress(String sender) {

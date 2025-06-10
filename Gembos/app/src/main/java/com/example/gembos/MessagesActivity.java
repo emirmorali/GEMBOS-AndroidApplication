@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.Comparator;
 
+import javax.crypto.SecretKey;
+
 public class MessagesActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_READ_SMS = 100;
     private RecyclerView messageRecyclerView;
@@ -81,12 +83,23 @@ public class MessagesActivity extends AppCompatActivity {
             }
         });
 
+        Map<String, SecretKey> sharedKeys = new HashMap<>();
+        for (Message msg : messageList) {
+            String sender = msg.getSender();
+            if (!sharedKeys.containsKey(sender)) {
+                SecretKey key = KeyExchangeManager.getSharedKey(sender, this);
+                if (key != null) {
+                    sharedKeys.put(sender, key);
+                }
+            }
+        }
+
         adapter = new MessageAdapter(messageList, (phoneNumber, isEncrypted) -> {
             Intent intent = new Intent(MessagesActivity.this, TextingActivity.class);
             intent.putExtra("phone_number", phoneNumber);
             intent.putExtra("is_encrypted", isEncrypted);
             startActivity(intent);
-        }, null);
+        }, sharedKeys);
         messageRecyclerView.setAdapter(adapter);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
@@ -130,8 +143,7 @@ public class MessagesActivity extends AppCompatActivity {
             String address = msg.getSender();
             String date = msg.getDate();
 
-            if (!latestMessages.containsKey(address) ||
-                    Long.parseLong(latestMessages.get(address).getDate()) < Long.parseLong(date)) {
+            if (!latestMessages.containsKey(address) || Long.parseLong(latestMessages.get(address).getDate()) < Long.parseLong(date)) {
                 latestMessages.put(address, msg);
             }
         }
